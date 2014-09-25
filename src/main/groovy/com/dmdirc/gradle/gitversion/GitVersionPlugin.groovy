@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+package com.dmdirc.gradle.gitversion;
+
 import org.mdonoughe.JGitDescribeTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
