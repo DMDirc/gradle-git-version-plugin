@@ -20,13 +20,47 @@
  * SOFTWARE.
  */
 
+import org.mdonoughe.JGitDescribeTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
-public class GitVersionPlugin implements Plugin<Project> {
+class GitVersionPlugin implements Plugin<Project> {
 
-    public void apply(final Project project) {
+    void apply(Project project) {
+        def jgit = new JGitDescribeTask()
+        jgit.dir = getGitDirectory(project)
 
+        def subdir = getRelativeSubdir(project, jgit.dir)
+        if (!subdir.isEmpty()) {
+            jgit.subdir = subdir
+        }
+
+        def version = jgit.description
+        project.version = getProjectVersion(version)
+    }
+
+    File getGitDirectory(Project project) {
+        def target = project.projectDir
+        def gitDir = new File(target, '.git')
+        while (!gitDir.exists() && target.parentFile != null) {
+            target = target.parentFile
+            gitDir = new File(target, '.git')
+        }
+        return gitDir
+    }
+
+    String getRelativeSubdir(Project project, File gitDir) {
+        def parent = gitDir.parentFile.absolutePath
+        def target = project.projectDir.absolutePath
+        return target.substring(parent.length())
+    }
+
+    String getProjectVersion(String gitVersion) {
+        if (gitVersion.matches('.*-[0-9]+-[0-9a-f]+$')) {
+            return gitVersion + '-SNAPSHOT'
+        } else {
+            return gitVersion
+        }
     }
 
 }
