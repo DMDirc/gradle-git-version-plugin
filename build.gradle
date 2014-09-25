@@ -1,4 +1,5 @@
 apply plugin: 'groovy'
+apply plugin: 'maven-publish'
 
 repositories {
     mavenCentral()
@@ -12,6 +13,58 @@ dependencies {
     compile localGroovy()
     compile group: 'com.github.shanemcc', name: 'jgit-describe', version: '0.5'
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '2.3.1.+'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId 'com.dmdirc'
+            artifactId 'git-version'
+            version '1.0'
+
+            artifact jar
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('inceptionYear', '2014')
+                root.appendNode('url', 'https://github.com/DMDirc/gradle-git-version-plugin')
+                root.appendNode('name', "${groupId}:${artifactId}")
+                root.appendNode('description', 'Plugin to automatically apply versions based on git tags')
+
+                def scm = root.appendNode('scm')
+                scm.appendNode('url', 'https://github.com/DMDirc/gradle-git-version-plugin')
+                scm.appendNode('connection', 'scm:https://github.com/DMDirc/gradle-git-version-plugin.git')
+                scm.appendNode('developerConnection', 'scm:ssh://git@github.com:DMDirc/gradle-git-version-plugin.git')
+
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'MIT License')
+                license.appendNode('url', 'http://www.opensource.org/licenses/mit-license.php')
+                license.appendNode('distribution', 'repo')
+
+                def dependenciesNode = asNode().appendNode('dependencies')
+
+                configurations.compile.allDependencies.each {
+                    if (it.group != null && it.name != null) {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+
+                configurations.testCompile.allDependencies.each {
+                    if (it.group != null && it.name != null) {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                        dependencyNode.appendNode('scope', 'test')
+                    }
+                }
+            }
+        }
+    }
+    repositories.mavenLocal()
 }
 
 task createWrapper(type: Wrapper) {
