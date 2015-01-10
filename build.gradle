@@ -3,16 +3,12 @@ apply plugin: 'maven-publish'
 
 repositories {
     mavenCentral()
-    maven {
-        url 'http://nexus.dmdirc.com/nexus/content/repositories/thirdparty/'
-    }
 }
 
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile group: 'com.github.shanemcc', name: 'jgit-describe', version: '0.5'
-    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '2.3.1.+'
+    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '3.6.1.201501031845-r'
 }
 
 publishing {
@@ -22,7 +18,7 @@ publishing {
             artifactId 'git-version'
             version '1.0'
 
-            artifact jar
+            from components.java
 
             pom.withXml {
                 def root = asNode()
@@ -40,27 +36,6 @@ publishing {
                 license.appendNode('name', 'MIT License')
                 license.appendNode('url', 'http://www.opensource.org/licenses/mit-license.php')
                 license.appendNode('distribution', 'repo')
-
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                configurations.compile.allDependencies.each {
-                    if (it.group != null && it.name != null) {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                    }
-                }
-
-                configurations.testCompile.allDependencies.each {
-                    if (it.group != null && it.name != null) {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                        dependencyNode.appendNode('scope', 'test')
-                    }
-                }
             }
         }
     }

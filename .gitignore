@@ -1,2 +1,5 @@
 /.gradle
 /build
+
+/.idea
+/gradle-git-version-plugin.iml

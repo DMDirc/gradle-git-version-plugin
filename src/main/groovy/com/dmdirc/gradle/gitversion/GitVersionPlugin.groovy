@@ -20,49 +20,66 @@
  * SOFTWARE.
  */
 
-package com.dmdirc.gradle.gitversion;
+package com.dmdirc.gradle.gitversion
 
-import org.mdonoughe.JGitDescribeTask;
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.ObjectId
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
 class GitVersionPlugin implements Plugin<Project> {
 
     void apply(Project project) {
-        def jgit = new JGitDescribeTask()
-        jgit.dir = getGitDirectory(project)
-
-        def subdir = getRelativeSubdir(project, jgit.dir)
-        if (!subdir.isEmpty()) {
-            jgit.subdir = subdir
-        }
-
-        def version = jgit.description
-        project.version = getProjectVersion(version)
+        def gitDir = findGitDirectory(project)
+        def gitWrapper = getGitWrapper(gitDir)
+        def target = getTargetObject(gitWrapper, project.projectDir, gitDir)
+        def version = getVersion(gitWrapper, target)
+        project.version = version
     }
 
-    File getGitDirectory(Project project) {
+    static def findGitDirectory(Project project) {
         def target = project.projectDir
         def gitDir = new File(target, '.git')
         while (!gitDir.exists() && target.parentFile != null) {
             target = target.parentFile
             gitDir = new File(target, '.git')
         }
+
         return gitDir
     }
 
-    String getRelativeSubdir(Project project, File gitDir) {
-        def parent = gitDir.parentFile.absolutePath
-        def target = project.projectDir.absolutePath
-        return target.substring(parent.length())
+    static def findLinkedGitDirectory(File linkFile) {
+        return new File(linkFile.parentFile, linkFile.text.replace('gitdir: ','').trim())
     }
 
-    String getProjectVersion(String gitVersion) {
-        if (gitVersion.matches('.*-[0-9]+-[0-9a-f]+$')) {
-            return gitVersion + '-SNAPSHOT'
-        } else {
-            return gitVersion
+    static def getGitWrapper(File gitDir) {
+        def resolvedGitDir = gitDir.isDirectory() ? gitDir : findLinkedGitDirectory(gitDir)
+        return Git.wrap(new FileRepositoryBuilder().setGitDir(resolvedGitDir).build())
+    }
+
+    static def getTargetObject(Git gitWrapper, File projectDir, File gitDir) {
+        def path = getRelativePath(gitDir.parentFile, projectDir)
+        // TODO: Handle the case where there are no commits in a project.
+        return getLogCommand(gitWrapper, path).setMaxCount(1).call().first().id
+    }
+
+    static def getLogCommand(Git gitWrapper, String path) {
+        def log = gitWrapper.log()
+        if (!path.empty) {
+            log.addPath(path)
         }
+        return log.setMaxCount(1)
+    }
+
+    static def getRelativePath(File from, File to) {
+        return from.toPath().relativize(to.toPath()).toString()
+    }
+
+    static def getVersion(Git gitWrapper, ObjectId objectId) {
+        def gitVersion = gitWrapper.describe().setTarget(objectId).call()
+        // TODO: Add a setting to enable releases
+        return gitVersion + '-SNAPSHOT'
     }
 
 }
