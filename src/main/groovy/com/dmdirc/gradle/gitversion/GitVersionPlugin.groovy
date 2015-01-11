@@ -43,7 +43,7 @@ class GitVersionPlugin implements Plugin<Project> {
     }
 
     /**
-     * Walks up the file system attempting to find a directory or file named ',git'.
+     * Walks up the file system attempting to find a directory or file named '.git'.
      *
      * @param startingDir The directory to start looking in
      * @return The located .git file or folder, or {@code null} if not found
