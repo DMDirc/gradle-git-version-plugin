@@ -46,19 +46,26 @@ those projects.
 
 ## How to use
 
-The plugin is hosted on bintray. To add it to a project, add the following
-dependency and repository to your `build.gradle`:
+The plugin is available through the
+[Gradle plugins repo](https://plugins.gradle.org/plugin/com.dmdirc.git-version).
+If you are using Gradle 2.1, you can use the new plugin mechanism to use this
+plugin by simply adding:
+
+    plugins {
+      id "com.dmdirc.git-version" version "1.0"
+    }
+
+to the top of your `build.gradle`. Alternatively, the plugin can be obtained
+from the jcenter repository and applied manually:
 
     buildscript {
         repositories {
-            maven { url 'https://dl.bintray.com/dmdirc/releases/' }
+            jcenter()
         }
         dependencies {
             classpath group: 'com.dmdirc', name: 'git-version', version: '1.0'
         }
     }
-
-And then apply the plugin:
 
     apply plugin: 'com.dmdirc.git-version'
 
