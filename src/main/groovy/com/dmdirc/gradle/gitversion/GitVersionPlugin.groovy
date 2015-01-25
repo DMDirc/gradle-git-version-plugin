@@ -34,6 +34,8 @@ import org.gradle.api.Project
  */
 class GitVersionPlugin implements Plugin<Project> {
 
+    private static final String FALLBACK_VERSION = 'Unknown'
+
     void apply(Project project) {
         def gitDir = findGitDirectory(project.projectDir)
         def gitWrapper = getGitWrapper(gitDir)
@@ -92,8 +94,8 @@ class GitVersionPlugin implements Plugin<Project> {
      */
     static def getTargetObject(Git gitWrapper, File projectDir, File gitDir) {
         def path = getRelativePath(gitDir.parentFile, projectDir)
-        // TODO: Handle the case where there are no commits in a project.
-        return getLogCommand(gitWrapper, path).call().first().id
+        def firstCommit = getLogCommand(gitWrapper, path).call().iterator().next()
+        return firstCommit == null ? FALLBACK_VERSION : firstCommit.id
     }
 
     /**
