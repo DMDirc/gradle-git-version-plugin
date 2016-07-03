@@ -48,11 +48,11 @@ those projects.
 
 The plugin is available through the
 [Gradle plugins repo](https://plugins.gradle.org/plugin/com.dmdirc.git-version).
-If you are using Gradle 2.1, you can use the new plugin mechanism to use this
-plugin by simply adding:
+If you are using Gradle 2.1 or newer, you can use the new plugin mechanism to
+use this plugin by simply adding:
 
     plugins {
-      id "com.dmdirc.git-version" version "1.0"
+      id "com.dmdirc.git-version" version "1.1"
     }
 
 to the top of your `build.gradle`. Alternatively, the plugin can be obtained
@@ -63,7 +63,7 @@ from the jcenter repository and applied manually:
             jcenter()
         }
         dependencies {
-            classpath group: 'com.dmdirc', name: 'git-version', version: '1.0'
+            classpath group: 'com.dmdirc', name: 'git-version', version: '1.1'
         }
     }
 
